@@ -1,13 +1,15 @@
+# main.py
+
 from algoritmo_genetico import algoritmo_genetico, evaluar_terreno
-from elements.Terreno import Terreno
-from elements.Aspersor import Aspersor
+from elementos.Terreno import Terreno
+from elementos.Aspersor import Aspersor
 
 # Parámetros específicos del problema
 LADO_TERRENO = 100  # Lado del terreno (cuadrado)
 NUM_ASPERSORES = 10  # Número de aspersores
 RADIO_ASPERSOR = 15  # Radio de cada aspersor
 POBLACION_INICIAL = 50
-GENERACIONES = 20
+GENERACIONES = 100
 
 if __name__ == "__main__":
     mejor_individuo = algoritmo_genetico(

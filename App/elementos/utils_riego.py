@@ -1,5 +1,5 @@
 import random
-from App.elements.Aspersor import Aspersor
+from App.elementos.Aspersor import Aspersor
 
 def generar_posiciones_aleatorias(num_aspersores, lado_terreno):
     posiciones = []

@@ -15,7 +15,9 @@ class Individuo:
         return self.fitness
 
 def inicializar_poblacion(tam_poblacion, longitud_gen):
-    return [Individuo([random.uniform(0, 100) for _ in range(longitud_gen)]) for _ in range(tam_poblacion)]
+    poblacion = [Individuo([random.uniform(0, 100) for _ in range(longitud_gen)]) for _ in range(tam_poblacion)]
+    print(poblacion)
+    return poblacion
 
 def seleccion_torneo(poblacion, k=3):
     seleccionados = random.sample(poblacion, k)
@@ -38,14 +40,14 @@ def mutacion_uniforme(individuo, prob_mutacion):
         if random.random() < prob_mutacion:
             individuo.genes[i] = random.uniform(0, 100)
 
-def evaluar_terreno(genes, lado_terreno, radio_aspersor):
-    terreno = Terreno(lado_terreno)
+def evaluar_terreno(genes, lado_terreno, tam_punto, radio_aspersor):
+    terreno = Terreno(lado_terreno, tam_punto)
     for i in range(0, len(genes), 2):
         aspersor = Aspersor(genes[i], genes[i + 1], radio_aspersor)
         terreno.agregar_aspersor(aspersor)
-    return terreno.fitness()
+    return terreno.area_cubierta()
 
-def graficar_terreno(ax, individuo, radio_aspersor, iteracion, lado_terreno):
+def graficar_terreno(ax, individuo, radio_aspersor, iteracion, lado_terreno, tam_punto, area_cubierta):
     ax.clear()
     ax.set_aspect('equal')
     plt.xlim(0, lado_terreno)
@@ -63,6 +65,9 @@ def graficar_terreno(ax, individuo, radio_aspersor, iteracion, lado_terreno):
     
     # Mostrar el número de iteración
     ax.text(0.95, 0.05, f'Iteración: {iteracion}', horizontalalignment='right', verticalalignment='center', transform=ax.transAxes, fontsize=12, bbox=dict(facecolor='white', alpha=0.5))
+    
+    # Mostrar el área cubierta
+    ax.text(0.05, 0.05, f'Área cubierta: {area_cubierta:.2f}', horizontalalignment='left', verticalalignment='center', transform=ax.transAxes, fontsize=12, bbox=dict(facecolor='white', alpha=0.5))
 
 def calcular_estadisticas(poblacion):
     fitness_values = [ind.fitness for ind in poblacion]
@@ -81,6 +86,9 @@ def algoritmo_genetico(tam_poblacion, longitud_gen, num_generaciones, prob_mutac
     fig, ax = plt.subplots()
     plt.ion()
     plt.show()
+
+    mejor_individuo = None
+    area_maxima = kwargs['lado_terreno'] ** 2  # Área máxima del terreno
 
     for gen in range(num_generaciones):
         nueva_poblacion = []
@@ -101,10 +109,21 @@ def algoritmo_genetico(tam_poblacion, longitud_gen, num_generaciones, prob_mutac
         print(f"Generación {gen} - Min: {min_fitness} Max: {max_fitness} Avg: {avg_fitness}")
 
         # Visualizar la mejor solución en la generación actual
-        mejor_individuo = max(poblacion, key=lambda ind: ind.fitness)
-        graficar_terreno(ax, mejor_individuo, kwargs['radio_aspersor'], gen, kwargs['lado_terreno'])
+        mejor_actual = max(poblacion, key=lambda ind: ind.fitness)
+        graficar_terreno(ax, mejor_actual, kwargs['radio_aspersor'], gen, kwargs['lado_terreno'], kwargs['tam_punto'], mejor_actual.fitness)
         plt.draw()
         plt.pause(0.5)  # Pausa para actualizar la gráfica
 
+        # Detener si se ha cubierto todo el terreno
+        if mejor_actual.fitness >= area_maxima:
+            mejor_individuo = mejor_actual
+            break
+
+    if not mejor_individuo:
+        mejor_individuo = max(poblacion, key=lambda ind: ind.fitness)
+
     plt.ioff()
-    mejor_individuo
+    graficar_terreno(ax, mejor_individuo, kwargs['radio_aspersor'], num_generaciones, kwargs['lado_terreno'], kwargs['tam_punto'], mejor_individuo.fitness)
+    plt.show()
+
+    return mejor_individuo
