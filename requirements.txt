@@ -1,0 +1,10 @@
+import random
+import matplotlib
+import numpy 
+import seaborn
+
+--instalar por comando
+pip install random
+pip install matplotlib
+import numpy
+import seaborn
