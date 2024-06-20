@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Optimización de Riego</title>
+    <link href="/static/style.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <h1>Optimización de Riego</h1>
+        <button onclick="startOptimization()">Iniciar Optimización</button>
+        <div id="message"></div>
+        <canvas id="riegocanvas" width="300" height="300" style="border:1px solid #000000;"></canvas>
+    </div>
+    <script>
+        let finished = false;
+
+        function startOptimization() {
+            fetch('/start')
+                .then(response => response.json())
+                .then(data => {
+                    drawAspersores(data.poblacion);
+                    document.getElementById('message').textContent = `Población inicial visualizada. Generación ${data.current_generation}`;
+                    setTimeout(showNextGeneration, 2000); // Espera 2 segundos antes de mostrar la siguiente generación
+                });
+        }
+
+        function showNextGeneration() {
+            if (!finished) {
+                fetch('/next_generation')
+                    .then(response => response.json())
+                    .then(data => {
+                        drawAspersores(data.poblacion);
+                        finished = data.finished;
+                        if (finished) {
+                            document.getElementById('message').textContent = 'Optimización finalizada.';
+                        } else {
+                            document.getElementById('message').textContent = `Mostrando generación ${data.current_generation}`;
+                            setTimeout(showNextGeneration, 2000); // Continuar mostrando generaciones
+                        }
+                    });
+            }
+        }
+
+        function drawAspersores(poblacion) {
+            const canvas = document.getElementById('riegocanvas');
+            if (canvas.getContext) {
+                const ctx = canvas.getContext('2d');
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                const scale = 300 / 10;
+                poblacion.forEach(aspersor => {
+                    ctx.beginPath();
+                    ctx.arc(aspersor[0] * scale, aspersor[1] * scale, 5, 0, 2 * Math.PI);
+                    ctx.fillStyle = 'green';
+                    ctx.fill();
+                    ctx.lineWidth = 1;
+                    ctx.strokeStyle = '#003300';
+                    ctx.stroke();
+                });
+            }
+        }
+    </script>
+</body>
+</html>
